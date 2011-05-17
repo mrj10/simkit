@@ -34,14 +34,11 @@ void ClockDomain::toposort() {
   for(std::vector<ClockedBlock *>::iterator it = cb.begin(), end = cb.end(); it != end; ++it) {
     for(std::vector<Clockable *>::iterator itOuts = (*it)->outputs.begin(), endOuts = (*it)->outputs.end(); itOuts != endOuts; ++itOuts) {
       for(std::set<Clockable *>::const_iterator itZCD = (*itOuts)->getZeroCycleDepsBegin(), endZCD = (*itOuts)->getZeroCycleDepsEnd(); itZCD != endZCD; ++itZCD) {
-#ifdef DEBUG
-        std::cerr << "toposort() " << (*itZCD)->getName() << " is a ZCD of " << (*itOuts)->getName() << ", an output of block " << (*it)->getName() << std::endl;
-#endif
         for(std::vector<ClockedBlock *>::iterator it2 = cb.begin(), end2 = cb.end(); it2 != end2; ++it2) {
           for(std::vector<Clockable *>::iterator itIns = (*it2)->inputs.begin(), endIns = (*it2)->inputs.end(); itIns != endIns; ++itIns) {
             if(*itZCD == *itIns) { //Insert an edge
 #ifdef DEBUG
-              std::cerr << "toposort() inserting edge b/w " << (*it)->getName() << " and " << (*it2)->getName() << std::endl;
+              std::cerr << "toposort() inserting edge b/w " << (*it)->getName() << "::" << (*itOuts)->getName() << " and " << (*it2)->getName() << "::" << (*itIns)->getName() << std::endl;
 #endif              
               forward_adjacency[*it].insert(*it2);
               backward_adjacency[*it2].insert(*it);
@@ -63,12 +60,12 @@ void ClockDomain::toposort() {
   std::vector<ClockedBlock *> sorted;
   std::set<ClockedBlock *> visited;
   for(std::vector<ClockedBlock *>::iterator it = cb.begin(), end = cb.end(); it != end; ++it) {
-    if(backward_adjacency.count(*it) == 0) { //No incoming edges
+    if(forward_adjacency.count(*it) == 0) { //No incoming edges (in reversed sense)
 #ifdef DEBUG
   std::cerr << "toposort() starting visit() chain with " << (*it)->getName() << std::endl;
 #endif
       std::set<ClockedBlock *> visited_this_call_chain;
-      toposort_visitor(*it, sorted, forward_adjacency, visited, visited_this_call_chain);
+      toposort_visitor(*it, sorted, backward_adjacency, visited, visited_this_call_chain);
     }
   }
 
@@ -98,7 +95,7 @@ void ClockDomain::toposort() {
 
 void ClockDomain::toposort_visitor(ClockedBlock *cb,
                                    std::vector<ClockedBlock *> &sorted,
-                                   std::map< ClockedBlock *, std::set<ClockedBlock *> > &forward_adjacency,
+                                   std::map< ClockedBlock *, std::set<ClockedBlock *> > &backward_adjacency,
                                    std::set<ClockedBlock *> &visited,
                                    std::set<ClockedBlock *> &visited_this_call_chain) {
   if(visited_this_call_chain.insert(cb).second == false) { //Already visited this block this call chain
@@ -110,9 +107,9 @@ void ClockDomain::toposort_visitor(ClockedBlock *cb,
 #endif
   if(visited.count(cb) == 0) {
     visited.insert(cb);
-    if(forward_adjacency.count(cb) != 0) { //If I have outgoing edges
-      for(std::set<ClockedBlock *>::iterator it = forward_adjacency[cb].begin(), end = forward_adjacency[cb].end(); it != end; ++it) {
-        toposort_visitor(*it, sorted, forward_adjacency, visited, visited_this_call_chain);
+    if(backward_adjacency.count(cb) != 0) { //If I have outgoing edges
+      for(std::set<ClockedBlock *>::iterator it = backward_adjacency[cb].begin(), end = backward_adjacency[cb].end(); it != end; ++it) {
+        toposort_visitor(*it, sorted, backward_adjacency, visited, visited_this_call_chain);
       }
     }
     sorted.push_back(cb);

@@ -21,7 +21,7 @@ class ClockDomain : public Clockable {
     std::vector<ClockedBlock *> cb;
     void toposort_visitor(ClockedBlock *cb,
                           std::vector<ClockedBlock *> &sorted,
-                          std::map< ClockedBlock *, std::set<ClockedBlock *> > &forward_adjacency,
+                          std::map< ClockedBlock *, std::set<ClockedBlock *> > &backward_adjacency,
                           std::set<ClockedBlock *> &visited,
                           std::set<ClockedBlock *> &visited_this_call_chain);
 };

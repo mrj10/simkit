@@ -101,10 +101,10 @@ int main(int argc, char *argv[])
   ua1.stallout.registerInput(&stall1, 0, 1);
   ua2.stallout.registerInput(&stall2, 0, 1);
 
-  //Adding the blocks 3-2-1 so that we can see that toposort() reorders them appropriately (1-2-3 or 2-1-3).
-  cd1.addBlock(&ua3);
-  cd1.addBlock(&ua2);
+  //Adding the blocks 1-2-3 so that we can see that toposort() reorders them appropriately (3-1-2 or 3-2-1).
   cd1.addBlock(&ua1);
+  cd1.addBlock(&ua2);
+  cd1.addBlock(&ua3);
   cd1.toposort();
 
   for(int i = 0; i < 100; i++) {
