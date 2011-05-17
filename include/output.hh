@@ -8,6 +8,12 @@
 #include "clocking_util.hh"
 #include "clockable.hh"
 
+//#define DEBUG
+
+#ifdef DEBUG
+#include <iostream>
+#endif
+
 #define OUTPUT_TEMPLATE_PARAM template<class OUTPUTPAYLOAD>
 
 //Forward decl
@@ -41,17 +47,20 @@ class Output : public Clockable{
           latency(_latency),
           value_every_n_cycles(_value_every_n_cycles)
         {
+#ifdef DEBUG
+          std::cerr << "Constructing wire_t with (qsize,latency,value_every_n_cycles) = (" << qsize << "," << latency << "," << value_every_n_cycles << ")" << std::endl;
+#endif
           if(latency > 0) {
-            q = new q_entry_t[qsize]; 
+            q.resize(qsize);
             outidx = 0;
             inidx = (outidx+1) % qsize;
             nextvalid = false;
           }
         }
   	  	~wire_t(){
-          if(latency > 0) {
-  	  	    delete[] q;
-          }
+#ifdef DEBUG
+          std::cerr << "Destroying wire_t with (qsize,latency,value_every_n_cycles) = (" << qsize << "," << latency << "," << value_every_n_cycles << ")" << std::endl;
+#endif
   	  	}
         bool isNextValid() const {
           return nextvalid;
@@ -77,7 +86,7 @@ class Output : public Clockable{
         size_t getNumSinks() const { return sinks.size(); }
       private:
         sinkvec sinks;
-      	q_entry_t *q;
+      	std::vector<q_entry_t> q;
         size_t qsize; //Logically const, but can't declare it so b/c we want to make a std::vector<> of wire_t's
       	size_t inidx;
       	size_t outidx;

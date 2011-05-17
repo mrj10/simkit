@@ -11,7 +11,7 @@
 #include "clockable.hh"
 #include "identity_elements.hh"
 
-#define DEBUG
+//#define DEBUG
 
 #define INPUT_TEMPLATE_PARAM template<class INPUTPAYLOAD>
 
@@ -73,7 +73,7 @@ class Input : public InputBase {
 INPUT_TEMPLATE_PARAM
 void Input<INPUTPAYLOAD>::addDriver(Output<INPUTPAYLOAD> *o) {
   if(mdct == MDCT_DISALLOWED && !drivers.empty()) {
-    std::cerr << "Error: Adding second driver " << o->getName() << " to " << name << std::endl;
+    std::cerr << "Error: Adding second driver " << o->getName() << " to " << getName() << std::endl;
     assert(0);
   }
   driver_tracker_t dt(o);
@@ -83,7 +83,7 @@ void Input<INPUTPAYLOAD>::addDriver(Output<INPUTPAYLOAD> *o) {
 INPUT_TEMPLATE_PARAM
 void Input<INPUTPAYLOAD>::putValue(INPUTPAYLOAD p, cycle_t cycle_written) {
 #ifdef DEBUG
-  std::cerr << "Input " << name << " driven to " << p << ", written @ Cycle " << cycle_written << std::endl;
+  std::cerr << "Input " << getName() << " driven to " << p << ", written @ Cycle " << cycle_written << std::endl;
 #endif
   switch(mdct) {
     case MDCT_ONE:
@@ -96,7 +96,7 @@ void Input<INPUTPAYLOAD>::putValue(INPUTPAYLOAD p, cycle_t cycle_written) {
         printf("getcycle() = %"PRIu64"\n", getCycle());
         std::cerr << getcycle << std::endl;
         std::cerr << getCycle() << " " << drive_count << std::endl;
-        std::cerr << "Error: driving Input " << name << " of mdct type " << mdct << " twice" << std::endl;
+        std::cerr << "Error: driving Input " << getName() << " of mdct type " << mdct << " twice" << std::endl;
         assert(0);
       }
     case MDCT_LAST: //fallthrough

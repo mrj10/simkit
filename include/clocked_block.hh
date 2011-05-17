@@ -12,11 +12,12 @@ class ClockedBlock : public Clockable {
       Clockable(_name, _getcycle)
     {
     }
+    virtual void init();
     void clock();
     friend class ClockDomain;
   protected:
     virtual void update() = 0;
-    
+
     std::vector<Clockable *> inputs;
     std::vector<Clockable *> outputs;
 };

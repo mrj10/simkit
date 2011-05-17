@@ -6,7 +6,8 @@
 #include <vector>
 #include "clocking_util.hh"
 
-#define DEBUG
+//#define DEBUG
+
 #ifdef DEBUG
 #include <iostream>
 #endif

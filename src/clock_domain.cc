@@ -7,7 +7,7 @@
 #include <map>
 #include <cassert>
 
-#define DEBUG
+//#define DEBUG
 
 void ClockDomain::addBlock(ClockedBlock *_cb) {
   cb.push_back(_cb);
@@ -21,6 +21,12 @@ void ClockDomain::clock() {
     (*it)->clock();
   for(std::vector<Clockable *>::iterator it = outputs.begin(), end = outputs.end(); it != end; ++it)
     (*it)->clock();
+}
+
+void ClockDomain::init() {
+  toposort();
+  for(std::vector<ClockedBlock *>::iterator it = cb.begin(), end = cb.end(); it != end; ++it)
+    (*it)->init();
 }
 
 void ClockDomain::toposort() {

@@ -14,11 +14,18 @@
 #include "clocked_block.hh"
 #include "input.hh"
 
-#define DEBUG
+//#define DEBUG
 
 #ifdef DEBUG
 #include <iostream>
 #endif
+
+void ClockedBlock::init() {
+  for(std::vector<Clockable *>::iterator it = inputs.begin(), end = inputs.end(); it != end; ++it) {
+    InputBase *ib = static_cast<InputBase *>(*it);
+    ib->resetDriveCount();
+  }
+}  
 
 void ClockedBlock::clock() {
 #ifdef DEBUG

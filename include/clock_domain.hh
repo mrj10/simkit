@@ -14,11 +14,12 @@ class ClockDomain : public Clockable {
   public:
     ClockDomain(std::string _name, cycle_t (*_getcycle)()) : Clockable(_name, _getcycle) { }
     void addBlock(ClockedBlock *_cb);
-    void toposort();
+    void init();
     void clock();
   protected:
     std::vector<Clockable *> outputs;
     std::vector<ClockedBlock *> cb;
+    void toposort();
     void toposort_visitor(ClockedBlock *cb,
                           std::vector<ClockedBlock *> &sorted,
                           std::map< ClockedBlock *, std::set<ClockedBlock *> > &backward_adjacency,
