@@ -14,8 +14,8 @@
 
 class Clockable {
   public:
-    Clockable(std::string _name, cycle_t (*_getcycle)()) :
-      name(_name),
+    Clockable(std::string _basename, std::string _name, cycle_t (*_getcycle)()) :
+      name((_basename.empty() ? _basename : (_basename + "::")) + _name),
       getcycle(_getcycle)
     {
     }

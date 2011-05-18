@@ -8,8 +8,8 @@ class ClockDomain;
 
 class ClockedBlock : public Clockable {
   public:
-    ClockedBlock(std::string _name, cycle_t (*_getcycle)()) : 
-      Clockable(_name, _getcycle)
+    ClockedBlock(std::string _basename, std::string _name, cycle_t (*_getcycle)()) : 
+      Clockable(_basename, _name, _getcycle)
     {
     }
     virtual void init();

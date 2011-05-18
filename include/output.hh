@@ -24,8 +24,8 @@ OUTPUT_TEMPLATE_PARAM
 class Output : public Clockable{
   public:
 
-  	Output(std::string _name, cycle_t (*_getcycle)()) :
-  	  Clockable(_name, _getcycle) {
+  	Output(std::string _basename, std::string _name, cycle_t (*_getcycle)()) :
+  	  Clockable(_basename, _name, _getcycle) {
    		
   	}
 

@@ -44,7 +44,7 @@ void ClockDomain::toposort() {
           for(std::vector<Clockable *>::iterator itIns = (*it2)->inputs.begin(), endIns = (*it2)->inputs.end(); itIns != endIns; ++itIns) {
             if(*itZCD == *itIns) { //Insert an edge
 #ifdef DEBUG
-              std::cerr << "toposort() inserting edge b/w " << (*it)->getName() << "::" << (*itOuts)->getName() << " and " << (*it2)->getName() << "::" << (*itIns)->getName() << std::endl;
+              std::cerr << "toposort() inserting edge b/w " << (*itOuts)->getName() << " and " << (*itIns)->getName() << std::endl;
 #endif              
               forward_adjacency[*it].insert(*it2);
               backward_adjacency[*it2].insert(*it);

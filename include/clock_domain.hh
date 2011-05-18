@@ -12,7 +12,7 @@ class ClockedBlock;
 
 class ClockDomain : public Clockable {
   public:
-    ClockDomain(std::string _name, cycle_t (*_getcycle)()) : Clockable(_name, _getcycle) { }
+    ClockDomain(std::string _basename, std::string _name, cycle_t (*_getcycle)()) : Clockable(_basename, _name, _getcycle) { }
     void addBlock(ClockedBlock *_cb);
     void init();
     void clock();

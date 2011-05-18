@@ -21,9 +21,9 @@ class Output;
 
 class InputBase : public Clockable {
   public:
-    InputBase(std::string _name, cycle_t (*_getcycle)(), bool _required = true, bool _required_every_cycle = true, 
+    InputBase(std::string _basename, std::string _name, cycle_t (*_getcycle)(), bool _required = true, bool _required_every_cycle = true, 
               MultiDriverCombType_t _mdct = MDCT_DISALLOWED) :
-              Clockable(_name, _getcycle),
+              Clockable(_basename, _name, _getcycle),
 	            drive_count(0),
               required(_required), required_every_cycle(_required_every_cycle),
               mdct(_mdct)
@@ -43,9 +43,9 @@ class InputBase : public Clockable {
 INPUT_TEMPLATE_PARAM
 class Input : public InputBase {
   public:
-    Input(std::string _name, cycle_t (*_getcycle)(), bool required = true, bool required_every_cycle = true, 
+    Input(std::string _basename, std::string _name, cycle_t (*_getcycle)(), bool required = true, bool required_every_cycle = true, 
           MultiDriverCombType_t mdct = MDCT_DISALLOWED) :
-          InputBase(_name, _getcycle, required, required_every_cycle, mdct)
+          InputBase(_basename, _name, _getcycle, required, required_every_cycle, mdct)
     {
     }
 

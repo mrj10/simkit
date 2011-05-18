@@ -14,13 +14,13 @@ cycle_t getCycle() { return CURR_CYCLE; }
 class UnpipelinedAdder : public ClockedBlock
 {
   public:
-    UnpipelinedAdder(std::string _name, cycle_t (*_getcycle)(), size_t lat) :
-      ClockedBlock(_name, _getcycle), 
-      stallin("StallIn", _getcycle, false, false, MDCT_OR),
-      in1("In1", _getcycle, false, false, MDCT_DISALLOWED),
-      in2("In2", _getcycle, false, false, MDCT_DISALLOWED),
-      out("Out", _getcycle),
-      stallout("StallOut", _getcycle),
+    UnpipelinedAdder(std::string _basename, std::string _name, cycle_t (*_getcycle)(), size_t lat) :
+      ClockedBlock(_basename, _name, _getcycle), 
+      stallin(getName(), "StallIn", _getcycle, false, false, MDCT_OR),
+      in1(getName(), "In1", _getcycle, false, false, MDCT_DISALLOWED),
+      in2(getName(), "In2", _getcycle, false, false, MDCT_DISALLOWED),
+      out(getName(), "Out", _getcycle),
+      stallout(getName(), "StallOut", _getcycle),
       latency(lat),
       cycleready(0)
     {
@@ -46,30 +46,47 @@ class UnpipelinedAdder : public ClockedBlock
       bool stallvalue;
       bool stallvalid = stallin.getValue(stallvalue);
       if(!stallvalid) {
-        std::cerr << "Error: UnpipelinedAdder " << name << " has invalid stallin input" << std::endl;
+        std::cerr << "Error: UnpipelinedAdder " << getName() << " has invalid stallin input" << std::endl;
         assert(0);
       }
+
+      //bool internalStall = cycleready != 0 && getcycle() < cycleready;
+      //if(internalStall)
+      //{
+        //std::cerr << getName() << " internal stalling" << std::endl;
+      //}
+      //stallout.setNext(stallvalue || internalStall);
+      stallout.setNext(false);
+
       if(!stallvalue) { //Don't stall
         //std::cerr << getName() << " not stalling" << std::endl;
         unsigned int in1val, in2val;
 
         
         if(cycleready != 0 && getcycle() >= cycleready) {
-          std::cerr << getName() << " setting out to " << result << std::endl;
+          //std::cerr << getName() << " setting out to " << result << std::endl;
           out.setNext(result);
+          cycleready = 0;
         }
 
-        if(in1.getValue(in1val) && in2.getValue(in2val)) {
-          std::cerr << getName() << " taking in 2 values (" << in1val << "," << in2val << ")" << std::endl;
-          result = in1val + in2val;
-          if(latency == 0)
-            out.setNext(result);
-          else
-            cycleready = getcycle() + latency;
+        if(cycleready == 0) {
+          bool in1valid = in1.getValue(in1val), in2valid = in2.getValue(in2val);
+          if(in1valid && in2valid) {
+            //std::cerr << getName() << " taking in 2 values (" << in1val << "," << in2val << ")" << std::endl;
+            result = in1val + in2val;
+            if(latency == 0)
+              out.setNext(result);
+            else
+              cycleready = getcycle() + latency;
+          }
+          else {
+            //std::cerr << getName() << "(in1valid, in2valid) = (" << in1valid << "," << in2valid << ")" << std::endl;
+          }
         }
       }
-      bool internalStall = cycleready != 0 && getcycle() < cycleready;
-      stallout.setNext(stallvalue || internalStall);
+      else {
+        //std::cerr << getName() << " stalled" << std::endl;
+      }
     }
 
     size_t latency;
@@ -80,16 +97,16 @@ class UnpipelinedAdder : public ClockedBlock
 class TestHarness : public ClockedBlock
 {
   public:
-    TestHarness(std::string _name, cycle_t (*_getcycle)()) :
-      ClockedBlock(_name, _getcycle),
-      result("result", _getcycle, false, false, MDCT_DISALLOWED),
-      in1("in1", _getcycle),
-      in2("in2", _getcycle),
-      in3("in3", _getcycle),
-      in4("in4", _getcycle),
-      nostall("NOSTALL", _getcycle),
-      stall1("stall1", _getcycle, false, false, MDCT_DISALLOWED),
-      stall2("stall2", _getcycle, false, false, MDCT_DISALLOWED)
+    TestHarness(std::string _basename, std::string _name, cycle_t (*_getcycle)()) :
+      ClockedBlock(_basename, _name, _getcycle),
+      result(getName(), "result", _getcycle, false, false, MDCT_DISALLOWED),
+      in1(getName(), "in1", _getcycle),
+      in2(getName(), "in2", _getcycle),
+      in3(getName(), "in3", _getcycle),
+      in4(getName(), "in4", _getcycle),
+      nostall(getName(), "NOSTALL", _getcycle),
+      stall1(getName(), "stall1", _getcycle, false, false, MDCT_DISALLOWED),
+      stall2(getName(), "stall2", _getcycle, false, false, MDCT_DISALLOWED)
     {
       outputs.push_back(&in1);
       outputs.push_back(&in2);
@@ -125,16 +142,16 @@ class TestHarness : public ClockedBlock
       printf("Cycle %2"PRIu64": ", getCycle());
       bool s1, s2;
       if(!stall1.getValue(s1) || !stall2.getValue(s2)) {
-        std::cerr << "Error: " << getName() << " stall1 or stall2 was not valid." << std::endl;
-        assert(0);
+        std::cerr << "Warning: " << getName() << " stall1 or stall2 was not valid." << std::endl;
+        s1 = true;
+        s2 = true;
+        //assert(0);
       }
       if(!s1) {
-        printf("setting (i1,i2) = (%2d, %2d) ", i1, i2);
         in1.setNext(i1);
         in2.setNext(i2);
       }
       if(!s2) {
-        printf("setting (i3,i4) = (%2d, %2d) ", i3, i4);
         in3.setNext(i3);
         in4.setNext(i4);
       }
@@ -142,18 +159,17 @@ class TestHarness : public ClockedBlock
     
       unsigned int res;
       bool resvalid = result.getValue(res);
-      printf("Result = (%01d, %u), (Stall1, Stall2) : (%01d %01d)\n", resvalid, (resvalid ? res : 0U), s1, s2);
+      printf("(In1, In2, In3, In4) = (%2d, %2d, %2d, %2d), Result = (%01d, %3u), (Stall1, Stall2) : (%01d %01d)\n", (!s1 ? i1 : 0), (!s1 ? i2 : 0), (!s2 ? i3 : 0), (!s2 ? i4 : 0), resvalid, (resvalid ? res : 0U), s1, s2);
     }
 };
 
 int main(int argc, char *argv[])
 {
-  printf("&getCycle = %p\n", &getCycle);
-  ClockDomain cd1("ClockDomain1", &getCycle);
-  UnpipelinedAdder ua1("UnpipelinedAdder1", &getCycle, 2);
-  UnpipelinedAdder ua2("UnpipelinedAdder2", &getCycle, 2);
-  UnpipelinedAdder ua3("UnpipelinedAdder3", &getCycle, 2);
-  TestHarness th("TestHarness", &getCycle);
+  ClockDomain cd1("", "ClockDomain1", &getCycle);
+  UnpipelinedAdder ua1("", "UnpipelinedAdder1", &getCycle, 2);
+  UnpipelinedAdder ua2("", "UnpipelinedAdder2", &getCycle, 2);
+  UnpipelinedAdder ua3("", "UnpipelinedAdder3", &getCycle, 2);
+  TestHarness th("", "TestHarness", &getCycle);
   //printf("%p %p %p %p %p\n", result.getcycle, in1.getcycle, in2.getcycle, in3.getcycle, in4.getcycle);
 
   ua1.out.registerInput(&ua3.in1, 1, 1);
