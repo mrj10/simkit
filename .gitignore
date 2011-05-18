@@ -4,7 +4,6 @@ configure
 depcomp
 install-sh
 Makefile.in
-Makefile
 missing
 autom4te.cache
 build/
