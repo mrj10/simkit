@@ -6,7 +6,7 @@ include $(top_srcdir)/Make-rules
 #noinst_LIBRARIES = librandom.a
 #librandom_a_SOURCES = src/RandomLib/Random.cpp
 
-bin_PROGRAMS = clocking_test
+bin_PROGRAMS = clocking_test callback_test
 common_SOURCES = \
 src/clock_domain.cc \
 src/clocked_block.cc \
@@ -16,9 +16,6 @@ clocking_test_SOURCES = \
  $(common_SOURCES) \
  src/clocking_test.cc
 
-#rigelsim_LDADD = $(LDADD) librandom.a
+callback_test_SOURCES = \
+ src/callback_test.cc	
 
-#if ENABLE_COUCHDB
-# rigelsim_SOURCES += src/couchdb/couchdb_simple.cpp
-# dramtest_SOURCES += src/couchdb/couchdb_simple.cpp
-#endif
